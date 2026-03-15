@@ -79,7 +79,7 @@ app.use((err, _req, res, _next) => {
 });
 
 app.listen(port, () => {
-  console.log(`QuickPick Movie API listening on port ${port}`);
+  console.log(`QuickPick Movies API listening on port ${port}`);
 
   if (!hasTmdbCredentials()) {
     console.warn(

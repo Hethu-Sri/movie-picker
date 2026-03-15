@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import MovieDetail from "../components/MovieDetail";
+import MovieLoader from "../components/MovieLoader";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { movieApi } from "../lib/api";
 
@@ -71,9 +72,11 @@ export default function MoviePage() {
   return (
     <main className="cinema-shell">
       {status.loading ? (
-        <div className="rounded-3xl border border-white/10 bg-white/5 p-5 text-paper/65">
-          Loading movie details...
-        </div>
+        <MovieLoader
+          compact
+          title="Loading movie details"
+          message="Pulling ratings, trailer, and streaming availability..."
+        />
       ) : null}
 
       {status.error ? (
@@ -92,4 +95,3 @@ export default function MoviePage() {
     </main>
   );
 }
-

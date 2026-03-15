@@ -1,6 +1,6 @@
-# QuickPick Movie
+# QuickPick Movies
 
-QuickPick Movie is a production-style movie recommendation app built to cut decision time down to one fast pick. It combines TMDB discovery, OMDb IMDb ratings, and TMDB watch providers so users can see what to watch and where to stream it in the United States and India.
+QuickPick Movies is a production-style movie decision app built to cut choice paralysis down to one fast pick. It combines TMDB discovery, OMDb IMDb ratings, and TMDB watch providers so users can see what to watch and where to stream it in the United States and India.
 
 If you do not have API keys yet, the app now runs in a built-in demo mode locally with a curated sample catalog. Add TMDB and OMDb keys later to switch to live data automatically.
 
@@ -13,8 +13,9 @@ If you do not have API keys yet, the app now runs in a built-in demo mode locall
 
 ## Features
 
-- Random movie picker with genre filtering
+- Random movie picker with category-aware discovery
 - Fast decision mode for an immediate recommendation
+- Dedicated lanes for Indian Cinema, Hollywood, and World Cinema
 - IMDb and TMDB ratings
 - Streaming availability in `US` and `IN`
 - Search for a specific title
@@ -93,15 +94,30 @@ Local URLs:
 - Backend: `http://localhost:5001`
 - Health check: `http://localhost:5001/api/health`
 
+## Discovery Categories
+
+- `all`: any highly rated movie
+- `indian-cinema`: random language from `hi`, `ta`, `te`, `ml`, `kn`, `bn`, `mr`, `pa`
+- `hollywood`: `with_original_language=en` and `region=US`
+- `world-cinema`: random language from `ko`, `ja`, `fr`, `es`, `it`, `de`
+
 ## API Endpoints
 
+- `GET /api/health`
 - `GET /api/genres`
-- `GET /api/random-movie?genre=Action`
-- `GET /api/fast-pick?genre=Drama`
+- `GET /api/random?category=indian-cinema&genre=Drama`
+- `GET /api/genre?category=world-cinema&genre=Thriller`
+- `GET /api/fast-pick?category=hollywood`
 - `GET /api/search?q=interstellar`
-- `GET /api/trending?limit=6`
-- `GET /api/movies/:id`
+- `GET /api/trending?limit=6&category=world-cinema`
+- `GET /api/movie/:id`
 - `GET /api/providers/:id`
+
+Backward-compatible aliases still exist for the older routes:
+
+- `GET /api/random-movie`
+- `GET /api/fast`
+- `GET /api/movies/:id`
 
 Example response shape:
 
@@ -110,6 +126,7 @@ Example response shape:
   "id": 27205,
   "title": "Inception",
   "year": 2010,
+  "originalLanguage": "en",
   "genres": ["Action", "Science Fiction", "Adventure"],
   "runtime": 148,
   "ratings": {
@@ -120,6 +137,13 @@ Example response shape:
   "platforms": {
     "US": ["Netflix", "Max"],
     "IN": ["Prime Video", "JioHotstar"]
+  },
+  "selection": {
+    "categoryId": "hollywood",
+    "categoryLabel": "Hollywood",
+    "originalLanguage": "en",
+    "originalLanguageLabel": "English",
+    "fastMode": false
   }
 }
 ```
@@ -165,3 +189,4 @@ Create a Node service pointing to the `backend` directory and set the same envir
 - Streaming availability uses TMDB watch providers, which is an official TMDB data source and avoids scraping.
 - The backend caches TMDB and OMDb responses in memory to reduce duplicate API calls and improve fast-pick response times.
 - When OMDb is not configured, the UI still works and falls back to TMDB ratings.
+- When TMDB is not configured, the app falls back to the built-in demo catalog for local UI development.

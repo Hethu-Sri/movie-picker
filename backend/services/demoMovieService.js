@@ -1,3 +1,9 @@
+import {
+  getCategoryLanguageCodes,
+  resolveDiscoveryCategory,
+  resolveLanguageLabel,
+} from "./discoveryConfig.js";
+
 const DEMO_GENRES = [
   { id: 28, name: "Action" },
   { id: 35, name: "Comedy" },
@@ -111,7 +117,20 @@ function normalizeQuery(value) {
 }
 
 function pickRandom(items) {
+  if (!items.length) {
+    return null;
+  }
+
   return items[Math.floor(Math.random() * items.length)];
+}
+
+function normalizeYear(year) {
+  if (year === undefined || year === null || year === "") {
+    return null;
+  }
+
+  const numericYear = Number(year);
+  return Number.isInteger(numericYear) ? numericYear : null;
 }
 
 function createTrailer(title) {
@@ -135,6 +154,7 @@ const RAW_MOVIES = [
     runtime: 148,
     ratings: { imdb: 8.8, tmdb: 8.4 },
     contentRating: "PG-13",
+    originalLanguage: "en",
     usPlatforms: ["Netflix", "Max"],
     inPlatforms: ["Prime Video", "JioHotstar"],
     palette: { primary: "#0F172A", secondary: "#1D4ED8", accent: "#F59E0B" },
@@ -150,6 +170,7 @@ const RAW_MOVIES = [
     runtime: 90,
     ratings: { imdb: 7.4, tmdb: 7.3 },
     contentRating: "R",
+    originalLanguage: "en",
     usPlatforms: ["Hulu"],
     inPlatforms: ["Prime Video"],
     palette: { primary: "#7C2D12", secondary: "#FB7185", accent: "#FDE68A" },
@@ -165,6 +186,7 @@ const RAW_MOVIES = [
     runtime: 104,
     ratings: { imdb: 7.8, tmdb: 7.6 },
     contentRating: "R",
+    originalLanguage: "en",
     usPlatforms: ["Peacock", "Prime Video"],
     inPlatforms: ["Netflix", "Prime Video"],
     palette: { primary: "#111827", secondary: "#374151", accent: "#EF4444" },
@@ -180,6 +202,7 @@ const RAW_MOVIES = [
     runtime: 116,
     ratings: { imdb: 7.9, tmdb: 7.6 },
     contentRating: "PG-13",
+    originalLanguage: "en",
     usPlatforms: ["Paramount+", "Prime Video"],
     inPlatforms: ["Netflix", "Sony LIV"],
     palette: { primary: "#0F172A", secondary: "#475569", accent: "#22D3EE" },
@@ -195,6 +218,7 @@ const RAW_MOVIES = [
     runtime: 120,
     ratings: { imdb: 8.1, tmdb: 7.6 },
     contentRating: "R",
+    originalLanguage: "en",
     usPlatforms: ["Max", "Prime Video"],
     inPlatforms: ["JioHotstar", "Prime Video"],
     palette: { primary: "#7C2D12", secondary: "#EA580C", accent: "#FCD34D" },
@@ -210,6 +234,7 @@ const RAW_MOVIES = [
     runtime: 128,
     ratings: { imdb: 8.0, tmdb: 7.9 },
     contentRating: "PG-13",
+    originalLanguage: "en",
     usPlatforms: ["Prime Video", "Hulu"],
     inPlatforms: ["Netflix", "Lionsgate Play"],
     palette: { primary: "#312E81", secondary: "#C026D3", accent: "#FDE68A" },
@@ -225,6 +250,7 @@ const RAW_MOVIES = [
     runtime: 117,
     ratings: { imdb: 8.4, tmdb: 8.3 },
     contentRating: "PG",
+    originalLanguage: "en",
     usPlatforms: ["Netflix"],
     inPlatforms: ["Netflix", "Sony LIV"],
     palette: { primary: "#1E3A8A", secondary: "#7C3AED", accent: "#38BDF8" },
@@ -240,6 +266,7 @@ const RAW_MOVIES = [
     runtime: 130,
     ratings: { imdb: 7.9, tmdb: 7.8 },
     contentRating: "PG-13",
+    originalLanguage: "en",
     usPlatforms: ["Netflix"],
     inPlatforms: ["Netflix"],
     palette: { primary: "#1F2937", secondary: "#92400E", accent: "#FBBF24" },
@@ -255,6 +282,7 @@ const RAW_MOVIES = [
     runtime: 105,
     ratings: { imdb: 8.4, tmdb: 8.2 },
     contentRating: "PG",
+    originalLanguage: "en",
     usPlatforms: ["Disney+"],
     inPlatforms: ["Disney+ Hotstar"],
     palette: { primary: "#134E4A", secondary: "#0EA5E9", accent: "#F59E0B" },
@@ -270,6 +298,7 @@ const RAW_MOVIES = [
     runtime: 155,
     ratings: { imdb: 8.0, tmdb: 7.8 },
     contentRating: "PG-13",
+    originalLanguage: "en",
     usPlatforms: ["Max"],
     inPlatforms: ["Prime Video", "JioCinema"],
     palette: { primary: "#451A03", secondary: "#A16207", accent: "#FDE68A" },
@@ -285,6 +314,7 @@ const RAW_MOVIES = [
     runtime: 144,
     ratings: { imdb: 8.0, tmdb: 7.7 },
     contentRating: "PG-13",
+    originalLanguage: "en",
     usPlatforms: ["Hulu", "Disney+"],
     inPlatforms: ["Disney+ Hotstar"],
     palette: { primary: "#7C2D12", secondary: "#DC2626", accent: "#FBBF24" },
@@ -300,9 +330,58 @@ const RAW_MOVIES = [
     runtime: 132,
     ratings: { imdb: 8.5, tmdb: 8.5 },
     contentRating: "R",
+    originalLanguage: "ko",
     usPlatforms: ["Hulu", "Max"],
     inPlatforms: ["Prime Video", "MUBI"],
     palette: { primary: "#14532D", secondary: "#065F46", accent: "#A7F3D0" },
+  },
+  {
+    id: 1013,
+    title: "3 Idiots",
+    year: 2009,
+    releaseDate: "2009-12-25",
+    overview: "Three engineering students question the pressure, posturing, and narrow success metrics around them.",
+    plot: "A missing friend sends two former classmates back through the highs and humiliations of college, where one rebel changed how they saw ambition and friendship.",
+    genres: ["Comedy", "Drama", "Romance"],
+    runtime: 170,
+    ratings: { imdb: 8.4, tmdb: 8.0 },
+    contentRating: "PG-13",
+    originalLanguage: "hi",
+    usPlatforms: ["Netflix", "Prime Video"],
+    inPlatforms: ["Netflix", "Prime Video"],
+    palette: { primary: "#1E3A8A", secondary: "#0F766E", accent: "#FBBF24" },
+  },
+  {
+    id: 1014,
+    title: "RRR",
+    year: 2022,
+    releaseDate: "2022-03-25",
+    overview: "Two revolutionaries collide with empire in a maximalist Telugu action epic.",
+    plot: "What begins as a mission of loyalty and disguise grows into a legend-sized friendship, betrayal, and uprising staged at impossible scale.",
+    genres: ["Action", "Drama", "Adventure"],
+    runtime: 182,
+    ratings: { imdb: 7.8, tmdb: 7.8 },
+    contentRating: "PG-13",
+    originalLanguage: "te",
+    usPlatforms: ["Netflix"],
+    inPlatforms: ["ZEE5", "Disney+ Hotstar"],
+    palette: { primary: "#7C2D12", secondary: "#991B1B", accent: "#F59E0B" },
+  },
+  {
+    id: 1015,
+    title: "Spirited Away",
+    year: 2001,
+    releaseDate: "2001-07-20",
+    overview: "A young girl wanders into a spirit world and must work to free her parents and herself.",
+    plot: "Chihiro crosses into a bathhouse for gods and monsters, where courage, labor, and memory become the path back to the world she knows.",
+    genres: ["Animation", "Adventure", "Drama"],
+    runtime: 125,
+    ratings: { imdb: 8.6, tmdb: 8.5 },
+    contentRating: "PG",
+    originalLanguage: "ja",
+    usPlatforms: ["Max"],
+    inPlatforms: ["Netflix"],
+    palette: { primary: "#0F172A", secondary: "#0F766E", accent: "#86EFAC" },
   },
 ];
 
@@ -333,6 +412,8 @@ const DEMO_MOVIES = RAW_MOVIES.map((movie) => {
     runtime: movie.runtime,
     ratings: movie.ratings,
     contentRating: movie.contentRating,
+    originalLanguage: movie.originalLanguage || "en",
+    originalLanguageLabel: resolveLanguageLabel(movie.originalLanguage || "en"),
     poster: createPoster(movie.title, movie.year, movie.palette),
     backdrop: createBackdrop(movie.title, movie.genres, movie.palette),
     imdbId: null,
@@ -360,6 +441,44 @@ function getGenreFilteredMovies(genre) {
   return DEMO_MOVIES.filter((movie) => movie.genres.includes(normalizedGenre));
 }
 
+function getCategoryFilteredMovies(movies, category) {
+  const profile = resolveDiscoveryCategory(category);
+
+  if (profile.id === "all") {
+    return movies;
+  }
+
+  const allowedLanguages = getCategoryLanguageCodes(profile.id);
+
+  if (!allowedLanguages.length) {
+    return movies;
+  }
+
+  const categoryMatches = movies.filter((movie) => allowedLanguages.includes(movie.originalLanguage));
+  return categoryMatches.length ? categoryMatches : movies;
+}
+
+function getFilteredDemoMovies({ genre, category } = {}) {
+  return getCategoryFilteredMovies(getGenreFilteredMovies(genre), category);
+}
+
+function applyYearAndLatestFilters(movies, { year, latest } = {}) {
+  const normalizedYear = normalizeYear(year);
+  const latestEnabled = latest === true || latest === "true" || latest === 1 || latest === "1";
+
+  let filteredMovies = [...movies];
+
+  if (normalizedYear) {
+    filteredMovies = filteredMovies.filter((movie) => movie.year === normalizedYear);
+  }
+
+  if (latestEnabled) {
+    filteredMovies.sort((left, right) => String(right.releaseDate).localeCompare(String(left.releaseDate)));
+  }
+
+  return filteredMovies;
+}
+
 function getMovieById(movieId) {
   const movie = DEMO_MOVIES.find((entry) => String(entry.id) === String(movieId));
 
@@ -384,20 +503,27 @@ export function getDemoProvidersById(movieId) {
   return getMovieById(movieId).providers;
 }
 
-export function getDemoRandomMovie({ genre } = {}) {
-  const pool = getGenreFilteredMovies(genre);
-  return pickRandom(pool);
+export function getDemoRandomMovie({ genre, category, year, latest } = {}) {
+  const pool = applyYearAndLatestFilters(getFilteredDemoMovies({ genre, category }), {
+    latest,
+    year,
+  });
+
+  return pickRandom(pool) || pickRandom(getFilteredDemoMovies({ genre, category }));
 }
 
-export function getDemoFastPick({ genre } = {}) {
-  const pool = [...getGenreFilteredMovies(genre)];
+export function getDemoFastPick({ genre, category, year, latest } = {}) {
+  const pool = [...applyYearAndLatestFilters(getFilteredDemoMovies({ genre, category }), {
+    latest,
+    year,
+  })];
   const sortedPool = pool.sort((left, right) => {
     const leftScore = left.ratings.imdb * 2 + left.ratings.tmdb - left.runtime / 100;
     const rightScore = right.ratings.imdb * 2 + right.ratings.tmdb - right.runtime / 100;
     return rightScore - leftScore;
   });
 
-  return sortedPool[0];
+  return sortedPool[0] || getDemoRandomMovie({ category, genre });
 }
 
 export function searchDemoMovies(query, limit = 6) {
@@ -423,9 +549,11 @@ export function searchDemoMovies(query, limit = 6) {
   return results.slice(0, limit);
 }
 
-export function getDemoTrending(limit = 6) {
-  return [...DEMO_MOVIES]
+export function getDemoTrending(limit = 6, { category, year, latest } = {}) {
+  return [...applyYearAndLatestFilters(getCategoryFilteredMovies(DEMO_MOVIES, category), {
+    latest,
+    year,
+  })]
     .sort((left, right) => right.ratings.imdb - left.ratings.imdb)
     .slice(0, limit);
 }
-

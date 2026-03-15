@@ -9,8 +9,8 @@ export function hasTmdbCredentials() {
   return Boolean(process.env.TMDB_API_KEY || process.env.TMDB_ACCESS_TOKEN);
 }
 
-function getTmdbHeaders() {
-  if (process.env.TMDB_ACCESS_TOKEN) {
+function getTmdbHeaders(useAccessToken = true) {
+  if (useAccessToken && process.env.TMDB_ACCESS_TOKEN) {
     return {
       Authorization: `Bearer ${process.env.TMDB_ACCESS_TOKEN}`,
     };
@@ -19,7 +19,7 @@ function getTmdbHeaders() {
   return {};
 }
 
-function buildTmdbUrl(endpoint, params = {}) {
+function buildTmdbUrl(endpoint, params = {}, useAccessToken = true) {
   const url = new URL(`${TMDB_API_BASE_URL}${endpoint}`);
   const apiKey = process.env.TMDB_API_KEY;
 
@@ -29,7 +29,7 @@ function buildTmdbUrl(endpoint, params = {}) {
     }
   });
 
-  if (!process.env.TMDB_ACCESS_TOKEN) {
+  if (!useAccessToken || !process.env.TMDB_ACCESS_TOKEN) {
     if (!apiKey) {
       throw new Error("TMDB credentials are missing. Set TMDB_API_KEY or TMDB_ACCESS_TOKEN.");
     }
@@ -40,13 +40,27 @@ function buildTmdbUrl(endpoint, params = {}) {
   return url;
 }
 
-async function tmdbFetch(endpoint, params = {}) {
-  const response = await fetch(buildTmdbUrl(endpoint, params), {
+async function runTmdbRequest(endpoint, params = {}, useAccessToken = true) {
+  const response = await fetch(buildTmdbUrl(endpoint, params, useAccessToken), {
     headers: {
       accept: "application/json",
-      ...getTmdbHeaders(),
+      ...getTmdbHeaders(useAccessToken),
     },
   });
+
+  return response;
+}
+
+async function tmdbFetch(endpoint, params = {}) {
+  const canTryAccessToken = Boolean(process.env.TMDB_ACCESS_TOKEN);
+  const canTryApiKey = Boolean(process.env.TMDB_API_KEY);
+
+  let response = await runTmdbRequest(endpoint, params, canTryAccessToken);
+
+  // If the bearer token is misconfigured, fall back to the API key when available.
+  if (response.status === 401 && canTryAccessToken && canTryApiKey) {
+    response = await runTmdbRequest(endpoint, params, false);
+  }
 
   if (!response.ok) {
     const error = new Error(`TMDB request failed with status ${response.status}.`);
@@ -98,8 +112,19 @@ export async function resolveGenreId(genreInput) {
   return match.id;
 }
 
-export async function discoverMovies({ genreId, page = 1, fastMode = false } = {}) {
-  const cacheKey = `tmdb:discover:${genreId || "all"}:${page}:${fastMode}`;
+export async function discoverMovies({
+  genreId,
+  page = 1,
+  fastMode = false,
+  minVoteAverage,
+  minVoteCount,
+  originalLanguage,
+  region,
+  sortBy,
+  year,
+  primaryReleaseDateGte,
+} = {}) {
+  const cacheKey = `tmdb:discover:${genreId || "all"}:${page}:${fastMode}:${minVoteAverage || ""}:${minVoteCount || ""}:${originalLanguage || ""}:${region || ""}:${sortBy || ""}:${year || ""}:${primaryReleaseDateGte || ""}`;
 
   return getOrSetCache(cacheKey, 10 * 60 * 1000, () =>
     tmdbFetch("/discover/movie", {
@@ -107,11 +132,15 @@ export async function discoverMovies({ genreId, page = 1, fastMode = false } = {
       include_video: false,
       language: "en-US",
       page,
+      primary_release_date_gte: primaryReleaseDateGte,
       primary_release_date_lte: new Date().toISOString().slice(0, 10),
-      sort_by: fastMode ? "popularity.desc" : "vote_average.desc",
-      "vote_average.gte": 6.5,
-      "vote_count.gte": fastMode ? 500 : 250,
+      primary_release_year: year,
+      region,
+      sort_by: sortBy || (fastMode ? "popularity.desc" : "popularity.desc"),
+      "vote_average.gte": minVoteAverage ?? (fastMode ? 7 : 6.5),
+      "vote_count.gte": minVoteCount ?? (fastMode ? 500 : 250),
       with_genres: genreId,
+      with_original_language: originalLanguage,
     }),
   );
 }

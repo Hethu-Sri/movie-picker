@@ -11,14 +11,30 @@ async function request(path) {
   return payload;
 }
 
+function withQuery(path, params = {}) {
+  const query = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      query.set(key, String(value));
+    }
+  });
+
+  const queryString = query.toString();
+  return queryString ? `${path}?${queryString}` : path;
+}
+
 export const movieApi = {
   getHealth: () => request("/health"),
   getGenres: () => request("/genres"),
-  getRandomMovie: (genre) =>
-    request(`/random-movie${genre ? `?genre=${encodeURIComponent(genre)}` : ""}`),
-  getFastPick: (genre) =>
-    request(`/fast-pick${genre ? `?genre=${encodeURIComponent(genre)}` : ""}`),
+  getRandomMovie: ({ genre, category, year, latest } = {}) =>
+    request(withQuery("/random", { genre, category, latest, year })),
+  getGenreMovie: ({ genre, category, year, latest } = {}) =>
+    request(withQuery("/genre", { genre, category, latest, year })),
+  getFastPick: ({ genre, category, year, latest } = {}) =>
+    request(withQuery("/fast-pick", { genre, category, latest, year })),
   searchMovies: (query) => request(`/search?q=${encodeURIComponent(query)}`),
-  getMovie: (id) => request(`/movies/${id}`),
-  getTrending: (limit = 6) => request(`/trending?limit=${limit}`),
+  getMovie: (id) => request(`/movie/${id}`),
+  getTrending: (limit = 6, category, year, latest) =>
+    request(withQuery("/trending", { category, latest, limit, year })),
 };

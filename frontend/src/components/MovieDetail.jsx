@@ -36,7 +36,10 @@ export default function MovieDetail({ movie, onSaveToggle, saved = false }) {
           </Link>
         </div>
         <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
-          <span className="glass-pill">{movie.year}</span>
+          <div className="flex flex-wrap gap-2">
+            <span className="glass-pill">{movie.year}</span>
+            {movie.originalLanguageLabel ? <span className="glass-pill">{movie.originalLanguageLabel}</span> : null}
+          </div>
           <h1 className="mt-4 font-display text-5xl text-paper sm:text-6xl">{movie.title}</h1>
           <p className="mt-3 max-w-3xl text-sm leading-7 text-paper/75">
             {movie.plot || movie.overview}
@@ -50,11 +53,19 @@ export default function MovieDetail({ movie, onSaveToggle, saved = false }) {
             <img src={movie.poster} alt={`${movie.title} poster`} className="w-full object-cover" />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
             <Stat label="IMDb" value={formatRating(movie.ratings.imdb)} />
             <Stat label="TMDB" value={formatRating(movie.ratings.tmdb)} />
             <Stat label="Runtime" value={formatRuntime(movie.runtime)} />
+            <Stat
+              label="Language"
+              value={movie.originalLanguageLabel || movie.selection?.originalLanguageLabel || "Unlisted"}
+            />
             <Stat label="Genre" value={formatGenres(movie.genres) || "Unlisted"} />
+            <Stat
+              label="Discovery"
+              value={movie.selection?.categoryLabel || "Movie Details"}
+            />
           </div>
 
           <button type="button" onClick={() => onSaveToggle(movie)} className="action-button--ghost w-full">

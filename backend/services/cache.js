@@ -5,12 +5,12 @@ export function getCachedValue(key) {
   const cached = cacheStore.get(key);
 
   if (!cached) {
-    return null;
+    return undefined;
   }
 
   if (cached.expiresAt <= Date.now()) {
     cacheStore.delete(key);
-    return null;
+    return undefined;
   }
 
   return cached.value;
@@ -28,7 +28,7 @@ export function setCachedValue(key, value, ttlMs) {
 export async function getOrSetCache(key, ttlMs, loader) {
   const cached = getCachedValue(key);
 
-  if (cached !== null) {
+  if (cached !== undefined) {
     return cached;
   }
 
@@ -49,4 +49,3 @@ export async function getOrSetCache(key, ttlMs, loader) {
   pendingStore.set(key, pending);
   return pending;
 }
-
